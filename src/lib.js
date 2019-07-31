@@ -74,7 +74,7 @@ const getAst = lex => {
 		switch (item.word) {
 			case "VALKKAA":
 				ast.push({
-					name: item.word,
+					word: item.word,
 					caseSensitive: false,
 					distinct: false,
 					parameters: untilNextKeyword(lex, i + 1, [
@@ -85,7 +85,7 @@ const getAst = lex => {
 				break;
 			case "TOST":
 				ast.push({
-					name: item.word,
+					word: item.word,
 					parameters: untilNextKeyword(lex, i + 1, ["NIINKU"]).filter(
 						notWhitespace
 					)
@@ -93,7 +93,7 @@ const getAst = lex => {
 				break;
 			case "TIETSÄ":
 				ast.push({
-					name: item.word,
+					word: item.word,
 					parameters: untilNextKeyword(lex, i + 1, [
 						"MISS",
 						"ON",
@@ -106,7 +106,7 @@ const getAst = lex => {
 				break;
 			case "JA":
 				ast.push({
-					name: item.word,
+					word: item.word,
 					parameters: untilNextKeyword(lex, i + 1, [
 						"NIINKU",
 						"JÄRJESTYKSES"
@@ -115,7 +115,7 @@ const getAst = lex => {
 				break;
 			case "MUT":
 				ast.push({
-					name: item.word,
+					word: item.word,
 					parameters: untilNextKeyword(lex, i + 1, ["VAA"]).filter(
 						notWhitespace
 					)
@@ -126,13 +126,15 @@ const getAst = lex => {
 	return ast;
 };
 
-const ipw = param => ['identifier' ,'punctuation' ,'whitespace'].includes(param.type);
+const ipw = param =>
+	["identifier", "punctuation", "whitespace"].includes(param.type);
 
 const transform = ast => {
 	let transform = [];
 	for (let i = 0; i < ast.length; i++) {
 		const item = ast[i];
-		switch (item.name) {
+		const itemBefore = ast[i - 1] || false;
+		switch (item.word) {
 			case "VALKKAA":
 				transform.push({
 					word: "SELECT",
@@ -146,25 +148,79 @@ const transform = ast => {
 						word: "DISTINCT",
 						type: "keyword"
 					});
-				item.parameters.filter(ipw).forEach(item => transform.push(item))
+				item.parameters
+					.filter(ipw)
+					.forEach(item => transform.push(item));
 				break;
 			case "TOST":
 				transform.push({
 					word: "FROM",
 					type: "keyword"
 				});
-				if (
-					item.parameters.filter(param => param.word === "NIINKU")
-						.length
-				)
-				item.parameters.filter(ipw).forEach(item => transform.push(item))
+				for (let i = 0; i < item.parameters.length; i++) {
+					const param = item.parameters[i];
+					const paramBefore = item.parameters[i - 1] || false;
+					switch (param.word) {
+						case "NIINKU":
+							transform.push({
+								word: "AS",
+								type: "keyword"
+							});
+							break;
+						default:
+							transform.push(param);
+					}
+				}
+				break;
+			case "TIETSÄ":
+				if (itemBefore && itemBefore.word !== "JA")
+					transform.push({
+						word: "WHERE",
+						type: "keyword"
+					});
+				else
+					transform.push({
+						word: "AND",
+						type: "keyword"
+					});
+				for (let i = 0; i < item.parameters.length; i++) {
+					const param = item.parameters[i];
+					const paramBefore = item.parameters[i - 1] || false;
+					switch (true) {
+						case param.word === "NIINKU":
+							if (!["ON", "VÄHÄ"].includes(paramBefore.word))
+								transform.push({
+									word: "AS",
+									type: "keyword"
+								});
+							break;
+						case param.word === "ON":
+							transform.push({
+								word: "LIKE",
+								type: "keyword"
+							});
+							break;
+						case param.word === "MISS":
+						case param.word === "VÄHÄ":
+							break;
+						case param.type === "string-literal":
+							transform.push({
+								...param,
+								word: param.word.replace(/Â´/gi, '"')
+							})
+							break;
+
+						default:
+							transform.push(param);
+					}
+				}
 		}
 	}
 	return transform;
 };
 
-// console.log(JSON.stringify(getAst(getLex(queryExp)), null, 2));
-// console.log(transform(getAst(getLex(queryExp))));
+console.log(JSON.stringify(getAst(getLex(queryExp)), null, 2));
+console.log(transform(getAst(getLex(queryExp))));
 // console.log(getLex(queryExp));
 // console.log(getLex(queryExp).map(obj => obj.word).join(''));
 console.log(
