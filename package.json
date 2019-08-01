@@ -2,10 +2,10 @@
   "name": "korso-sql-transpiler",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha */**/*.spec.js"
+    "test": "jest --coverage"
   },
   "author": "",
   "license": "ISC",
@@ -14,7 +14,6 @@
     "seed-random": "2.2.0"
   },
   "devDependencies": {
-    "chai": "^4.2.0",
-    "mocha": "^6.0.2"
+    "jest": "^24.8.0"
   }
 }
