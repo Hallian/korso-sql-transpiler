@@ -60,6 +60,11 @@ const handleTost = (lex, ast, item, i) => {
 					...child,
 					modifiers: []
 				})
+			else if(ik.length === 1)
+				params.push({
+					...child,
+					modifiers: []
+				})
 		}
 	});
 	ast.push({
