@@ -1,0 +1,47 @@
+textarea {
+	background: #282923;
+	color: #fafafa;
+	padding: 10px;
+	border: none;
+	resize: none;
+}
+
+#query-bar {
+	display: flex;
+	flex-direction: row;
+	flex-flow: row;
+	justify-content: flex-end;
+}
+
+#query {
+  flex: 1 100%;
+}
+
+#run {
+  flex: 1 200px;
+}
+
+#status {
+  flex: 2 100%;
+}
+
+table {
+	font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+	width: 100%;
+	border-spacing: 0;
+}
+th {
+	color: rgba(0,0,0,0.6);
+}
+tr th,
+tr td {
+	border-bottom: 1px solid rgba(0,0,0,0.12);
+	padding: 15px 10px;
+	display: table-cell;
+	text-align: left;
+	vertical-align: middle;
+	border-radius: 2px;
+}
+table>tbody>tr:nth-child(odd) {
+	background-color: rgba(242,242,242,0.5);
+}
